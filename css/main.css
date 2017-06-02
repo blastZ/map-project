@@ -11,3 +11,47 @@
     height: 100vh;
     max-width: 100%;
 }
+
+#nav-button {
+    background: black;
+    border: none;
+    padding: 10px;
+    font-size: 1.2em;
+    color: white;
+    position: fixed;
+    left: 0;
+    top: 50px;
+    z-index: 1;
+}
+
+#nav-panel {
+    display: none;
+    text-align: center;
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 200px;
+    height: 100vh;
+    background: black;
+    z-index: 2;
+}
+
+#nav-panel li {
+    padding: 10px;
+    text-decoration: none;
+    color: white;
+}
+
+#nav-panel li:hover,
+#nav-button:hover {
+    background: #9E9E9E;
+    cursor: pointer;
+}
+
+#nav-panel li:first-child {
+    background: green;
+}
+
+#nav-panel li:first-child:hover {
+    background: #8bc34a;
+}
