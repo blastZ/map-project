@@ -12,11 +12,16 @@
     max-width: 100%;
 }
 
+#pano {
+    width: 400px;
+    height: 400px;
+}
+
 #nav-button {
     background: black;
     border: none;
-    padding: 10px;
-    font-size: 1.2em;
+    padding: 6px 20px 6px 20px;
+    font-size: 1em;
     color: white;
     position: fixed;
     left: 0;
