@@ -189,21 +189,24 @@ function changeMapStyle(styleMode) {
 }
 
 $('#nav-button').click(function() {
-    $('#nav-panel').show(500);
+    $('#nav-button').hide();
+    $('#nav-panel').fadeIn(600);
 });
 
 $('#nav-panel li').first().click(function() {
-    $('#nav-panel').hide(500);
+    $('#nav-panel').fadeOut(600, function() {
+        $('#nav-button').fadeIn();
+    });
 });
 
-$('#nav-panel li:nth-child(2)').click(function() {
+$('#show-listings').click(function() {
     showListings();
 });
 
-$('#nav-panel li:nth-child(3)').click(function() {
+$('#hide-listings').click(function() {
     hideListings();
 });
 
-$('#nav-panel li:nth-child(4)').click(function() {
+$('#night-mode').click(function() {
     changeMapStyle('nightMode');
 });

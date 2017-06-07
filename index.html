@@ -8,15 +8,20 @@
     <script src="js/jquery-3.2.0.min.js"></script>
 </head>
 <body>
-    <button id="nav-button">Nav</button>
+    <div id='nav-button'>
+        <div></div>
+        <div></div>
+        <div></div>
+    </div>
     <ul id="nav-panel">
         <li>Close Panel</li>
-        <li>Show Listings</li>
-        <li>Hide Listings</li>
-        <li>Night Mode</li>
+        <li id="search-box"><input type="search" placeholder="Search..."></li>
+        <li id="show-listings">Show Listings</li>
+        <li id="hide-listings">Hide Listings</li>
+        <li id="night-mode">Night Mode</li>
     </ul>
     <div id="map"></div>
     <script src="js/main.js"></script>
-    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDcQM53TCgc_HnLzm4sbGN03GAqTMFPAKk&callback=initMap"></script>
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAQwGrxv0G8j-tHGDB5MVP5Xg5ls0ULHZk&callback=initMap"></script>
 </body>
 </html>
