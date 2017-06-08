@@ -1,6 +1,7 @@
 var map;
 var markers = [];
-var nightModeStyleType;
+var nightModeStyleType, defaultMarker, hoverMarker, largeInfoWindow, drawingManager;
+var polygon = null;
 
 function initMap() {
     map = new google.maps.Map(document.getElementById('map'), {
@@ -16,42 +17,49 @@ function initMap() {
         {title: 'TriBeCa Artsy Bachelor Pad', location: {lat: 40.7195264, lng: -74.0089934}},
         {title: 'Chinatown Homey Space', location: {lat: 40.7180628, lng: -73.9961237}}
     ];
-    var defaultMarker = {
+    defaultMarker = {
         url: 'imgs/marker-default.png',
         scaledSize: new google.maps.Size(32, 32),
         origin: new google.maps.Point(0, 0),
         anchor: new google.maps.Point(16, 32)
     };
-    var hoverMarker = {
+    hoverMarker = {
         url: 'imgs/marker-hover.png',
         scaledSize: new google.maps.Size(32, 32),
         origin: new google.maps.Point(0, 0),
         anchor: new google.maps.Point(16, 32)
     };
 
-    var largeInfoWindow = new google.maps.InfoWindow();
+    largeInfoWindow = new google.maps.InfoWindow();
     for(var i=0; i<locations.length; i++) {
         var position = locations[i].location;
         var title = locations[i].title;
-        var marker = new google.maps.Marker({
-            position: position,
-            title: title,
-            animation: google.maps.Animation.DROP,
-            id: i,
-            icon: defaultMarker,
-            draggable: true
-        });
-        markers.push(marker);
-        marker.addListener('mouseup', function() {
-            populateInfoWindow(this, largeInfoWindow);
-        });
-        marker.addListener('mouseover', function() {
-            this.setIcon(hoverMarker);
-        });
-        marker.addListener('mouseout', function() {
-            this.setIcon(defaultMarker);
-        });
+        addMarker(position, title);
     }
+
+    drawingManager = new google.maps.drawing.DrawingManager({
+        drawingMode: google.maps.drawing.OverlayType.POLYGON,
+        drawingControl: true,
+        drawingControlOptions: {
+            position: google.maps.ControlPosition.TOP_RIGHT,
+            drawingModes: [
+                google.maps.drawing.OverlayType.POLYGON
+            ]
+        }
+    })
+
+    drawingManager.addListener('overlaycomplete', function(event) {
+        if(polygon) {
+            polygon.setMap(null);
+            hideListings();
+        }
+        drawingManager.setDrawingMode(null);
+        polygon = event.overlay;
+        polygon.setEditable(true);
+        searchWithinPolygon();
+        polygon.getPath().addListener('set_at', searchWithinPolygon);
+        polygon.getPath().addListener('insert_at', searchWithinPolygon);
+    })
 
     nightModeStyleType = new google.maps.StyledMapType([
                 {elementType: 'geometry', stylers: [{color: '#242f3e'}]},
@@ -135,6 +143,37 @@ function initMap() {
     ]);
 }
 
+function searchWithinPolygon() {
+    for(var i=0; i<markers.length; i++) {
+        if(google.maps.geometry.poly.containsLocation(markers[i].position, polygon)) {
+            markers[i].setMap(map);
+        }else {
+            markers[i].setMap(null);
+        }
+    }
+}
+
+function addMarker(a_position, a_title) {
+    var marker = new google.maps.Marker({
+        position: a_position,
+        title: a_title,
+        animation: google.maps.Animation.DROP,
+        icon: defaultMarker,
+        draggable: false
+    });
+    markers.push(marker);
+    marker.addListener('mouseup', function() {
+        populateInfoWindow(this, largeInfoWindow);
+    });
+    marker.addListener('mouseover', function() {
+        this.setIcon(hoverMarker);
+    });
+    marker.addListener('mouseout', function() {
+        this.setIcon(defaultMarker);
+    });
+    return marker;
+}
+
 function populateInfoWindow(marker, infoWindow) {
     infoWindow.setContent('');
     infoWindow.marker = marker;
@@ -155,7 +194,7 @@ function populateInfoWindow(marker, infoWindow) {
             };
             var panorama = new google.maps.StreetViewPanorama(document.getElementById('pano'), panoramaOptions);
         }else {
-            infoWindow.setContent('<div>' + data.location.shortDescription + '</div>' + '<div>No Street View Found</div>');
+            infoWindow.setContent('<div>No Street View Found</div>');
         }
     }
     streetViewService.getPanoramaByLocation(marker.position, radius, getStreetView);
@@ -207,6 +246,50 @@ $('#hide-listings').click(function() {
     hideListings();
 });
 
+$('#toggle-drawing').click(function() {
+    toggleDrawing(drawingManager);
+})
+
 $('#night-mode').click(function() {
     changeMapStyle('nightMode');
+});
+
+function toggleDrawing(the_drawingManager) {
+    if(the_drawingManager.map) {
+        the_drawingManager.setMap(null);
+        if(polygon !== null) {
+            polygon.setMap(null);
+        }
+    }else {
+        the_drawingManager.setMap(map);
+    }
+}
+
+function zoomToArea() {
+    var geocoder = new google.maps.Geocoder();
+    var address = $('#search-area-text').val();
+    if(address === '') {
+        window.alert('You must enter an area, or address.');
+    }else {
+        geocoder.geocode(
+            {
+                address: address,
+                // componentRestrictions: {locality: 'New York'}
+            },function(results, status) {
+                if(status === google.maps.GeocoderStatus.OK) {
+                    map.setCenter(results[0].geometry.location);
+                    var myMarker = addMarker(results[0].geometry.location , address);//Bug: show a same area with more than one marker
+                    myMarker.setMap(map);
+                    map.setZoom(15);
+                }else {
+                    window.alert('We could not find that location - try entring a more specific place.');
+                }
+            });
+    }
+}
+
+$('#search-area-text').keydown(function(event) {
+    if(event.which == 13) {
+        zoomToArea();
+    }
 });
