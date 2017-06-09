@@ -6,20 +6,21 @@
     <title>Map-Project</title>
     <link rel="stylesheet" href="css/main.css">
     <script src="js/jquery-3.2.0.min.js"></script>
+    <script src="js/vue.js"></script>
 </head>
 <body>
-    <div id='nav-button'>
+    <div id='nav-button' v-on:click="showNavPanel">
         <div></div>
         <div></div>
         <div></div>
     </div>
     <ul id="nav-panel">
-        <li>Close Panel</li>
-        <li id="search-box"><input id='search-area-text' type="search" placeholder="Search..."></li>
-        <li id="show-listings">Show Listings</li>
-        <li id="hide-listings">Hide Listings</li>
-        <li id="toggle-drawing">Toggle Drawing</li>
-        <li id="night-mode">Toggle Night Mode</li>
+        <li v-on:click="closeNavPanel">Close Panel</li>
+        <li id="search-box"><input v-on:keydown.13="searchLocation" id="search-area-text" type="search" placeholder="Search..."></li>
+        <li v-on:click="showListings">Show Listings</li>
+        <li v-on:click="hideListings">Hide Listings</li>
+        <li v-on:click="toggleDrawing">Toggle Drawing</li>
+        <li v-on:click="toggleNightMode">Toggle Night Mode</li>
     </ul>
     <div id="map"></div>
     <script src="js/main.js"></script>

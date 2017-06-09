@@ -51,7 +51,7 @@ function initMap() {
     drawingManager.addListener('overlaycomplete', function(event) {
         if(polygon) {
             polygon.setMap(null);
-            hideListings();
+            navPanel.hideListings();
         }
         drawingManager.setDrawingMode(null);
         polygon = event.overlay;
@@ -183,7 +183,7 @@ function populateInfoWindow(marker, infoWindow) {
         if(status === google.maps.StreetViewStatus.OK) {
             var nearStreetViewLocation = data.location.latLng;
             var heading = google.maps.geometry.spherical.computeHeading(nearStreetViewLocation, marker.position);
-            infoWindow.setContent('<div>' + data.location.shortDescription + '</div><div id="pano"></div>');
+            infoWindow.setContent('<div>' + marker.title + '</div><div id="pano"></div>');
             var panoramaOptions = {
                 position: nearStreetViewLocation,
                 pov: {
@@ -194,26 +194,11 @@ function populateInfoWindow(marker, infoWindow) {
             };
             var panorama = new google.maps.StreetViewPanorama(document.getElementById('pano'), panoramaOptions);
         }else {
-            infoWindow.setContent('<div>No Street View Found</div>');
+            infoWindow.setContent('<div>' + marker.title + '</div>' + '<div>No Street View Found</div>');
         }
     }
     streetViewService.getPanoramaByLocation(marker.position, radius, getStreetView);
     infoWindow.open(map, marker);
-}
-
-function showListings() {
-    var bounds = new google.maps.LatLngBounds();
-    for(var i=0; i<markers.length; i++) {
-        markers[i].setMap(map);
-        bounds.extend(markers[i].position);
-    }
-    map.fitBounds(bounds);
-}
-
-function hideListings() {
-    for(var i=0; i<markers.length; i++) {
-        markers[i].setMap(null);
-    }
 }
 
 function changeMapStyle(styleMode) {
@@ -224,44 +209,6 @@ function changeMapStyle(styleMode) {
             map.mapTypes.set('nightMode', nightModeStyleType);
             map.setMapTypeId('nightMode');
         }
-    }
-}
-
-$('#nav-button').click(function() {
-    $('#nav-button').hide();
-    $('#nav-panel').fadeIn(600);
-});
-
-$('#nav-panel li').first().click(function() {
-    $('#nav-panel').fadeOut(600, function() {
-        $('#nav-button').fadeIn();
-    });
-});
-
-$('#show-listings').click(function() {
-    showListings();
-});
-
-$('#hide-listings').click(function() {
-    hideListings();
-});
-
-$('#toggle-drawing').click(function() {
-    toggleDrawing(drawingManager);
-})
-
-$('#night-mode').click(function() {
-    changeMapStyle('nightMode');
-});
-
-function toggleDrawing(the_drawingManager) {
-    if(the_drawingManager.map) {
-        the_drawingManager.setMap(null);
-        if(polygon !== null) {
-            polygon.setMap(null);
-        }
-    }else {
-        the_drawingManager.setMap(map);
     }
 }
 
@@ -278,7 +225,7 @@ function zoomToArea() {
             },function(results, status) {
                 if(status === google.maps.GeocoderStatus.OK) {
                     map.setCenter(results[0].geometry.location);
-                    var myMarker = addMarker(results[0].geometry.location , address);//Bug: show a same area with more than one marker
+                    var myMarker = addMarker(results[0].geometry.location , results[0].geometry.location.toString());//Bug: show a same area with more than one marker
                     myMarker.setMap(map);
                     map.setZoom(15);
                 }else {
@@ -288,8 +235,52 @@ function zoomToArea() {
     }
 }
 
-$('#search-area-text').keydown(function(event) {
-    if(event.which == 13) {
-        zoomToArea();
+var navButton = new Vue({
+    el: '#nav-button',
+    methods: {
+        showNavPanel: function() {
+            $('#nav-button').hide();
+            $('#nav-panel').fadeIn(600);
+        }
     }
-});
+})
+
+var navPanel = new Vue({
+    el: '#nav-panel',
+    methods: {
+        closeNavPanel: function() {
+            $('#nav-panel').fadeOut(600, function() {
+                $('#nav-button').fadeIn();
+            });
+        },
+        showListings: function() {
+            var bounds = new google.maps.LatLngBounds();
+            for(var i=0; i<markers.length; i++) {
+                markers[i].setMap(map);
+                bounds.extend(markers[i].position);
+            }
+            map.fitBounds(bounds);
+        },
+        hideListings: function() {
+            for(var i=0; i<markers.length; i++) {
+                markers[i].setMap(null);
+            }
+        },
+        toggleDrawing: function() {
+            if(drawingManager.map) {
+                drawingManager.setMap(null);
+                if(polygon !== null) {
+                    polygon.setMap(null);
+                }
+            }else {
+                drawingManager.setMap(map);
+            }
+        },
+        toggleNightMode: function() {
+            changeMapStyle('nightMode');
+        },
+        searchLocation: function() {
+            zoomToArea();
+        }
+    }
+})
