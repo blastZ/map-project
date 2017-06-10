@@ -9,6 +9,19 @@ function initMap() {
         center: {lng: -73.9980244, lat: 40.7413549}, //latitude 纬度 longitude 经度
         mapTypeControl: false
     });
+
+    if(navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(position){
+            var pos = {
+                lat: position.coords.latitude,
+                lng: position.coords.longitude
+            };
+            map.setCenter(pos);
+        })
+    }else {
+        window.alert('Sorry, Your web browser do not support location service');
+    }
+
     var locations = [
         {title: 'Park Ave Penthouse', location: {lat: 40.7713024, lng: -73.9632393}},
         {title: 'Chelsea Loft', location: {lat: 40.7444883, lng: -73.9949465}},
@@ -153,16 +166,25 @@ function searchWithinPolygon() {
     }
 }
 
+var currentId = 0;
+
+function uniqueId() {
+    return currentId++;
+}
+
 function addMarker(a_position, a_title) {
+    var id = uniqueId();
+    console.log(id);
     var marker = new google.maps.Marker({
         position: a_position,
         title: a_title,
         animation: google.maps.Animation.DROP,
         icon: defaultMarker,
-        draggable: false
+        draggable: false,
+        id: id
     });
     markers.push(marker);
-    marker.addListener('mouseup', function() {
+    marker.addListener('click', function() {
         populateInfoWindow(this, largeInfoWindow);
     });
     marker.addListener('mouseover', function() {
@@ -243,7 +265,7 @@ var navButton = new Vue({
             $('#nav-panel').fadeIn(600);
         }
     }
-})
+});
 
 var navPanel = new Vue({
     el: '#nav-panel',
@@ -283,4 +305,4 @@ var navPanel = new Vue({
             zoomToArea();
         }
     }
-})
+});
