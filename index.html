@@ -17,6 +17,21 @@
     <ul id="nav-panel">
         <li v-on:click="closeNavPanel">Close Panel</li>
         <li id="search-box"><input v-on:keydown.13="searchLocation" id="search-area-text" type="search" placeholder="Search..."></li>
+        <div style="display: flex; padding: 5px; align-items: center; padding-right:15px;">
+            <span style="flex: 1 0 auto; color: white;">Within:</span>
+            <select id="max-duration" style="flex: 2 1 20px; margin-right: 8px;">
+                <option value="10">10 min</option>
+                <option value="15">15 min</option>
+                <option value="30">30 min</option>
+                <option value="60">1 hour</option>
+              </select>
+            <select id="mode" style="flex: 2 1 20px;">
+                <option value="DRIVING">drive</option>
+                <option value="WALKING">walk</option>
+                <option value="BICYCLING">bike</option>
+                <option value="TRANSIT">transit ride</option>
+            </select>
+        </div>
         <li v-on:click="showListings">Show Listings</li>
         <li v-on:click="hideListings">Hide Listings</li>
         <li v-on:click="toggleDrawing">Toggle Drawing</li>
