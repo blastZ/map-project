@@ -1,4 +1,31 @@
+* {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
 
+select {
+    padding: 9px 0;
+    width: 100%;
+    border: none;
+    border-bottom: 1px solid #ccc
+}
+
+#map {
+    width: 100vw;
+    height: 100vh;
+    max-width: 100%;
+}
+
+#nav-button {
+    padding: 5px 15px;
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 1;
+ }
 
 
 #pano {

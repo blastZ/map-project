@@ -17,14 +17,14 @@
     <ul id="nav-panel">
         <li v-on:click="closeNavPanel">Close Panel</li>
         <li id="search-box"><input v-on:keydown.13="searchLocation" id="search-area-text" type="search" placeholder="Search..."></li>
-        <div style="display: flex; padding: 5px; align-items: center; padding-right:15px;">
+        <div style="display: flex; padding: 5px; align-items: center; padding-right:15px; width: 200px;">
             <span style="flex: 1 0 auto; color: white;">Within:</span>
             <select id="max-duration" style="flex: 2 1 20px; margin-right: 8px;">
                 <option value="10">10 min</option>
                 <option value="15">15 min</option>
                 <option value="30">30 min</option>
                 <option value="60">1 hour</option>
-              </select>
+            </select>
             <select id="mode" style="flex: 2 1 20px;">
                 <option value="DRIVING">drive</option>
                 <option value="WALKING">walk</option>
@@ -39,6 +39,6 @@
     </ul>
     <div id="map"></div>
     <script src="js/main.js"></script>
-    <script async defer src="https://maps.googleapis.com/maps/api/js?libraries=geometry,drawing&key=AIzaSyDcQM53TCgc_HnLzm4sbGN03GAqTMFPAKk&callback=initMap"></script>
+    <script async defer src="https://maps.googleapis.com/maps/api/js?libraries=geometry,drawing&key=AIzaSyAQwGrxv0G8j-tHGDB5MVP5Xg5ls0ULHZk&callback=initMap"></script>
 </body>
 </html>
