@@ -16,21 +16,29 @@
     </div>
     <ul id="nav-panel">
         <li v-on:click="closeNavPanel">Close Panel</li>
-        <li id="search-box"><input v-on:keydown.13="searchLocation" id="search-area-text" type="search" placeholder="Search..."></li>
-        <div style="display: flex; padding: 5px; align-items: center; padding-right:15px; width: 200px;">
-            <span style="flex: 1 0 auto; color: white;">Within:</span>
-            <select id="max-duration" style="flex: 2 1 20px; margin-right: 8px;">
+        <div id="search-box" class="flex-box" style="margin-top: 10px;">
+            <input v-on:keydown.13="searchLocation" id="search-area-text" type="search" placeholder="Search...">
+            <button v-on:click="searchLocation">Search</button>
+        </div>
+        <p style="color: white; margin-top: 5px;">WITHIN</p>
+        <div class="flex-box">
+            <select id="max-duration" style="margin-right: 5px;">
                 <option value="10">10 min</option>
                 <option value="15">15 min</option>
                 <option value="30">30 min</option>
                 <option value="60">1 hour</option>
             </select>
-            <select id="mode" style="flex: 2 1 20px;">
+            <select id="mode">
                 <option value="DRIVING">drive</option>
                 <option value="WALKING">walk</option>
                 <option value="BICYCLING">bike</option>
                 <option value="TRANSIT">transit ride</option>
             </select>
+        </div>
+        <p style="color: white;">OF</p>
+        <div class="flex-box">
+            <input id="search-within-time-text" type="text" placeholder="Ex: Google Office NYC or 75 9th Ave, New York, NY">
+            <button id="search-within-time" onclick="searchWithinTime()">Go</button>
         </div>
         <li v-on:click="showListings">Show Listings</li>
         <li v-on:click="hideListings">Hide Listings</li>

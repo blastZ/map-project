@@ -81,17 +81,34 @@ select {
     cursor: pointer;
 }
 
-#search-box input {
-    margin-top: 10px;
-    height: 29px;
+input {
+    height: 36px;
     width: 100%;
-    padding: 0 12px 0 30px;
-    background: white url("../imgs/search.svg") 2px 1px no-repeat;
+    padding: 10px;
     border: 1px solid;
     border-color: #a8acbc #babdcc #c0c3d2;
-    border-radius: 13px;
 }
 
 #search-box input:focus {
     outline: 0;
+}
+
+button {
+    height: 36px;
+    border: none;
+    color: white;
+    padding: 10px;
+    background-color: green;
+}
+
+button:hover {
+    cursor: pointer;
+    background-color: #8bc34a;
+}
+
+.flex-box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px;
 }

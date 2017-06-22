@@ -257,6 +257,69 @@ function zoomToArea() {
     }
 }
 
+function searchWithinTime() {
+    var distanceMatrixService = new google.maps.DistanceMatrixService;
+    var address = $('#search-within-time-text').val();
+    if(address === '') {
+        window.alert('You must enter an address');
+    }else {
+        navPanel.hideListings();
+        var origins = [];
+        for(var i=0; i<markers.length; i++) {
+            origins[i] = markers[i].position;
+        }
+        var destination = address;
+        var mode = $('#mode').val();
+        distanceMatrixService.getDistanceMatrix({
+            origins: origins,
+            destinations: [destination],
+            travelMode: google.maps.TravelMode[mode],
+            unitSystem: google.maps.UnitSystem.IMPERIAL,
+        }, function(response, status) {
+            if(status !== google.maps.DistanceMatrixStatus.OK) {
+                window.alert('Error was: ' + status);
+            }else {
+                displayMarkerWithinTime(response);
+            }
+        });
+    }
+}
+
+function displayMarkerWithinTime(response) {
+    var maxDuration = $('#max-duration').val();
+    var origins = response.originAddresses;
+    var destinations = response.destinationAddresses;
+    var alLeastOne = false;
+    console.log(response);
+    //origins 出发点个数，results 一个出发点与每个目的地对应的结果。
+    for(var i=0; i<origins.length; i++) {
+        var results = response.rows[i].elements;
+        for(var j=0; j<results.length; j++) {
+            var element = results[j];
+            if(element.status === 'OK') {
+                var distanceText = element.distance.text;
+                var duration = element.duration.value / 60;
+                var durationText = element.duration.text;
+                if(duration <= maxDuration) {
+                    markers[i].setMap(map);
+                    atLeastOne = true;
+                    var infoWindow = new google.maps.InfoWindow({
+                        content: durationText + ' away, ' + distanceText
+                    });
+                    infoWindow.open(map, markers[i]);
+                    markers[i].infoWindow = infoWindow;
+                    google.maps.event.addListener(markers[i], 'click', function() {
+                        this.infoWindow.close();
+                    })
+                }
+            }
+        }
+    }
+    if(!atLeastOne) {
+        window.alert('We could not find any locations within that distance!');
+    }
+}
+
 var navButton = new Vue({
     el: '#nav-button',
     methods: {
