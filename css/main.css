@@ -112,3 +112,15 @@ button:hover {
     justify-content: center;
     padding: 5px;
 }
+
+#view-route input {
+    background: #54b354;
+    color: white;
+    cursor: pointer;
+    margin-top: 5px;
+    border-radius: 5px;
+}
+
+#view-route input:hover {
+    background: green;
+}

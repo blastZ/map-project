@@ -274,7 +274,7 @@ function searchWithinTime() {
             origins: origins,
             destinations: [destination],
             travelMode: google.maps.TravelMode[mode],
-            unitSystem: google.maps.UnitSystem.IMPERIAL,
+            unitSystem: google.maps.UnitSystem.METRIC,
         }, function(response, status) {
             if(status !== google.maps.DistanceMatrixStatus.OK) {
                 window.alert('Error was: ' + status);
@@ -304,7 +304,9 @@ function displayMarkerWithinTime(response) {
                     markers[i].setMap(map);
                     atLeastOne = true;
                     var infoWindow = new google.maps.InfoWindow({
-                        content: durationText + ' away, ' + distanceText
+                        content: durationText + ' away, ' + distanceText +
+                        '<div id=\"view-route\"><input type=\"button\" value=\"View Route\" onclick = ' +
+                        '\"displayDirections(&quot;' + origins[i] + '&quot;);\"></input></div>'
                     });
                     infoWindow.open(map, markers[i]);
                     markers[i].infoWindow = infoWindow;
@@ -318,6 +320,37 @@ function displayMarkerWithinTime(response) {
     if(!atLeastOne) {
         window.alert('We could not find any locations within that distance!');
     }
+}
+
+var directionsDisplay = null;
+function displayDirections(origin) {
+    navPanel.hideListings();
+    var directionsService = new google.maps.DirectionsService;
+    var destinationAddress = $('#search-within-time-text').val();
+    var mode = $('#mode').val();
+    if(directionsDisplay !== null) {
+        directionsDisplay.setMap(null);
+        directionsDisplay = null;
+    }
+    directionsService.route({
+        origin: origin,
+        destination: destinationAddress,
+        travelMode: google.maps.TravelMode[mode]
+    },function(response, status) {
+        if(status === google.maps.DirectionsStatus.OK) {
+            directionsDisplay = new google.maps.DirectionsRenderer({
+                map: map,
+                directions: response,
+                draggable: true,
+                polylineOptions: {
+                    strokeColor: 'green'
+                }
+            });
+
+        }else {
+            window.alert('Directions request failed due to ' + status);
+        }
+    });
 }
 
 var navButton = new Vue({
