@@ -1,7 +1,15 @@
 var map;
-var markers = [];
+var markers = [], waypointsMarkers = [];
 var nightModeStyleType, defaultMarker, hoverMarker, largeInfoWindow, drawingManager;
 var polygon = null;
+
+function clearMarkers() {
+    markers = [];
+}
+
+function clearWaypoints() {
+    waypointsMarkers = [];
+}
 
 function initMap() {
     map = new google.maps.Map(document.getElementById('map'), {
@@ -21,6 +29,20 @@ function initMap() {
     }else {
         window.alert('Sorry, Your web browser do not support location service');
     }
+
+    var timeAutocomplete = new google.maps.places.Autocomplete(
+        document.getElementById("search-within-time-text")
+    );
+
+    var zoomAutocomplete = new google.maps.places.Autocomplete(
+        document.getElementById("search-area-text")
+    );
+
+    zoomAutocomplete.bindTo('bounds', map);
+
+    var waypointsAutocomplete = new google.maps.places.Autocomplete(
+        document.getElementById("waypoints-text")
+    );
 
     var locations = [
         {title: 'Park Ave Penthouse', location: {lat: 40.7713024, lng: -73.9632393}},
@@ -174,7 +196,6 @@ function uniqueId() {
 
 function addMarker(a_position, a_title) {
     var id = uniqueId();
-    console.log(id);
     var marker = new google.maps.Marker({
         position: a_position,
         title: a_title,
@@ -285,12 +306,36 @@ function searchWithinTime() {
     }
 }
 
+function addWaypoints() {
+    var geocoder = new google.maps.Geocoder();
+    var address = $('#waypoints-text').val();
+    if(address === '') {
+        window.alert('You must enter an area, or address.');
+    }else {
+        geocoder.geocode(
+            {
+                address: address,
+                // componentRestrictions: {locality: 'New York'}
+            },function(results, status) {
+                if(status === google.maps.GeocoderStatus.OK) {
+                    waypointsMarkers.push({
+                        location: results[0].geometry.location,
+                        stopover: false
+                    })
+                    console.log(results[0].geometry.location);
+                }else {
+                    window.alert('We could not find that location - try entring a more specific place.');
+                }
+            });
+    }
+}
+
 function displayMarkerWithinTime(response) {
     var maxDuration = $('#max-duration').val();
     var origins = response.originAddresses;
     var destinations = response.destinationAddresses;
     var alLeastOne = false;
-    console.log(response);
+    //response 返回一个对象 其中包含两个属性 originAddresses 和 destinationAddresses 它们是数组
     //origins 出发点个数，results 一个出发点与每个目的地对应的结果。
     for(var i=0; i<origins.length; i++) {
         var results = response.rows[i].elements;
@@ -335,7 +380,9 @@ function displayDirections(origin) {
     directionsService.route({
         origin: origin,
         destination: destinationAddress,
-        travelMode: google.maps.TravelMode[mode]
+        travelMode: google.maps.TravelMode[mode],
+        waypoints: waypointsMarkers,
+        optimizeWaypoints: true
     },function(response, status) {
         if(status === google.maps.DirectionsStatus.OK) {
             directionsDisplay = new google.maps.DirectionsRenderer({
