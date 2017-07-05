@@ -1,5 +1,5 @@
 var map;
-var markers = [], waypointsMarkers = [];
+var markers = [], waypointsMarkers = [], placeMarkers = [];
 var nightModeStyleType, defaultMarker, hoverMarker, largeInfoWindow, drawingManager;
 var polygon = null;
 
@@ -38,11 +38,27 @@ function initMap() {
         document.getElementById("search-area-text")
     );
 
-    zoomAutocomplete.bindTo('bounds', map);
+    zoomAutocomplete.bindTo('bounds', map); //偏向当前地图边界限制的区域位置
 
     var waypointsAutocomplete = new google.maps.places.Autocomplete(
         document.getElementById("waypoints-text")
     );
+
+    var placesSearchBox = new google.maps.places.SearchBox(
+        document.getElementById("search-places")
+    );
+
+    google.maps.event.addListener(map, 'bounds_changed', function() {
+        placesSearchBox.setBounds(map.getBounds());
+    });
+    //限制在当前地图边界内
+
+
+    placesSearchBox.addListener('places_changed', function() {
+        searchBoxPlaces(this);
+    });
+
+    document.getElementById('go-places').addEventListener('click', textSearchPlaces);
 
     var locations = [
         {title: 'Park Ave Penthouse', location: {lat: 40.7713024, lng: -73.9632393}},
@@ -86,7 +102,7 @@ function initMap() {
     drawingManager.addListener('overlaycomplete', function(event) {
         if(polygon) {
             polygon.setMap(null);
-            navPanel.hideListings();
+            navPanel.hideMarkers(markers);
         }
         drawingManager.setDrawingMode(null);
         polygon = event.overlay;
@@ -176,6 +192,107 @@ function initMap() {
                   stylers: [{color: '#17263c'}]
                 }
     ]);
+}
+
+function searchBoxPlaces(searchBox) {
+    navPanel.hideMarkers(placeMarkers);
+    var places = searchBox.getPlaces();
+    createMarkersForPlaces(places);
+    if(places.length === 0) {
+        window.alert("We did not find any places matching that search!");
+    }
+}
+
+function textSearchPlaces() {
+    var bounds = map.getBounds();
+    navPanel.hideMarkers(placeMarkers);
+    var placesService = new google.maps.places.PlacesService(map);
+    placesService.textSearch({
+        query: document.getElementById('search-places').value,
+        bounds: bounds
+    }, function(results, status) {
+        if(status === google.maps.places.PlacesServiceStatus.OK) {
+            createMarkersForPlaces(results);
+        }
+    })
+}
+
+function createMarkersForPlaces(places) {
+    var bounds = new google.maps.LatLngBounds();
+    for(var i=0; i<places.length; i++) {
+        var place = places[i];
+        var icon = {
+            url: place.icon,
+            size: new google.maps.Size(35, 35),
+            origin: new google.maps.Point(0, 0),
+            anchor: new google.maps.Point(15, 34),
+            scaledSize: new google.maps.Size(25, 25)
+        };
+        var marker = new google.maps.Marker({
+            map: map,
+            icon: icon,
+            title: place.name,
+            position: place.geometry.location,
+            id: place.place_id
+        });
+        var placeInfoWindow = new google.maps.InfoWindow();
+        marker.addListener('click', function() {
+            if(placeInfoWindow.marker === this) {
+                window.alert("This infowindow already is on this marker!");
+            } else {
+                getPlacesDetails(this, placeInfoWindow);
+            }
+        })
+        placeMarkers.push(marker);
+        if(place.geometry.viewport) {
+            bounds.union(place.geometry.viewport);
+        } else {
+            bounds.extend(place.geometry.location);
+        }
+    }
+    map.fitBounds(bounds);
+}
+
+function getPlacesDetails(marker, infowindow) {
+    var service = new google.maps.places.PlacesService(map);
+    service.getDetails({
+        placeId: marker.id
+    }, function(place, status) {
+        console.log(status);
+        if(status === google.maps.places.PlacesServiceStatus.OK) {
+            infowindow.marker = marker;
+            var innerHTML = '<div>';
+            if(place.name) {
+                innerHTML += '<strong>' + place.name + '</strong>';
+            }
+            if(place.formatted_address) {
+                innerHTML += '<br>' + place.formatted_address;
+            }
+            if(place.formatted_phone_number) {
+                innerHTML += '<br>' + place.formatted_phone_number;
+            }
+            if(place.opening_hours) {
+                innerHTML += '<br><br><strong>Hours:</strong><br>' +
+                    place.opening_hours.weekday_text[0] + '<br>' +
+                    place.opening_hours.weekday_text[1] + '<br>' +
+                    place.opening_hours.weekday_text[2] + '<br>' +
+                    place.opening_hours.weekday_text[3] + '<br>' +
+                    place.opening_hours.weekday_text[4] + '<br>' +
+                    place.opening_hours.weekday_text[5] + '<br>' +
+                    place.opening_hours.weekday_text[6];
+            }
+            if(place.photos) {
+                innerHTML += '<br><br><img src="' + place.photos[0].getUrl(
+                    {maxHeight: 100, maxWidth: 200}) + '">';
+            }
+            innerHTML += '</div>';
+            infowindow.setContent(innerHTML);
+            infowindow.open(map, marker);
+            infowindow.addListener('closeclick', function() {
+                infowindow.marker = null;
+            })
+        }
+    });
 }
 
 function searchWithinPolygon() {
@@ -284,7 +401,7 @@ function searchWithinTime() {
     if(address === '') {
         window.alert('You must enter an address');
     }else {
-        navPanel.hideListings();
+        navPanel.hideMarkers(markers);
         var origins = [];
         for(var i=0; i<markers.length; i++) {
             origins[i] = markers[i].position;
@@ -322,7 +439,6 @@ function addWaypoints() {
                         location: results[0].geometry.location,
                         stopover: false
                     })
-                    console.log(results[0].geometry.location);
                 }else {
                     window.alert('We could not find that location - try entring a more specific place.');
                 }
@@ -369,7 +485,7 @@ function displayMarkerWithinTime(response) {
 
 var directionsDisplay = null;
 function displayDirections(origin) {
-    navPanel.hideListings();
+    navPanel.hideMarkers(markers);
     var directionsService = new google.maps.DirectionsService;
     var destinationAddress = $('#search-within-time-text').val();
     var mode = $('#mode').val();
@@ -419,6 +535,10 @@ var navPanel = new Vue({
             });
         },
         showListings: function() {
+            if(markers.length === 0) {
+                window.alert('There are no markers to show!');
+                return;
+            }
             var bounds = new google.maps.LatLngBounds();
             for(var i=0; i<markers.length; i++) {
                 markers[i].setMap(map);
@@ -426,7 +546,7 @@ var navPanel = new Vue({
             }
             map.fitBounds(bounds);
         },
-        hideListings: function() {
+        hideMarkers: function(markers) {
             for(var i=0; i<markers.length; i++) {
                 markers[i].setMap(null);
             }

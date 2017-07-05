@@ -13,6 +13,11 @@ select {
     border-bottom: 1px solid #ccc
 }
 
+.full-width {
+    width: 100%;
+    max-width: 100%;
+}
+
 #map {
     width: 100vw;
     height: 100vh;
@@ -55,7 +60,7 @@ select {
     position: fixed;
     left: 0;
     top: 0;
-    width: 200px;
+    width: 250px;
     height: 100vh;
     background: black;
     z-index: 2;
